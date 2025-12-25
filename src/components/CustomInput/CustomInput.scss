@@ -1,0 +1,52 @@
+@use '@styles/variables.scss';
+
+.label-radiobutton,
+.label-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 3px;
+    position: relative;
+    font-size: variables.$font-size-s;
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE 10+ */
+    user-select: none; /* Standard */
+}
+
+.input-radiobutton,
+.input-checkbox {
+    appearance: none;
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid variables.$second-color;
+    border-radius: 50%;
+    background: variables.$white-color;
+    position: relative;
+    transition: border-color variables.$transition-fast;
+    cursor: pointer;
+}
+
+.input-radiobutton::before,
+.input-checkbox::before {
+    transition: background variables.$transition-fast;
+}
+
+.input-radiobutton:checked,
+.input-checkbox:checked {
+    border-color: variables.$black-color;
+    background: variables.$white-color;
+}
+
+.input-radiobutton:checked::before,
+.input-checkbox:checked::before {
+    content: "";
+    display: block;
+    width: 9px;
+    height: 9px;
+    background: variables.$black-color;
+    border-radius: 50%;
+    position: absolute;
+    top: -1px;
+    left: -1px;
+}
