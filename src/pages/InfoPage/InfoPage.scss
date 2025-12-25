@@ -1,0 +1,42 @@
+@use '@styles/variables.scss';
+@use '@styles/mixins.scss';
+
+.info {
+    &__container {
+        padding: 39px 29px;
+        display: flex;
+        flex-direction: column;
+        row-gap: 5vh;
+        max-width: 95vw;
+    }
+
+    &__description {
+        font-weight: variables.$font-weight-regular;
+        font-size: variables.$font-size-xs;
+    }
+
+    &__link {
+        font-weight: variables.$font-weight-regular;
+        font-size: variables.$font-size-xs;
+        color: variables.$main-color;
+        text-decoration-color: variables.$link-inactive;
+        transition: variables.$transition-slow text-decoration-color;
+
+        &:hover {
+            text-decoration-color: variables.$main-color;
+        }
+    }
+}
+
+@media screen and (max-width: 767px) {
+    .info {
+        &__description,
+        &__link {
+            font-size: variables.$font-size-xxs;
+        }
+
+        &__container {
+            row-gap: 2vh;
+        }
+    }
+}

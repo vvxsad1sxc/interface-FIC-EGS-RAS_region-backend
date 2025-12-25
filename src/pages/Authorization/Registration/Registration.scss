@@ -1,0 +1,65 @@
+@use '@styles/mixins.scss';
+
+.reg {
+    &__container {
+        @include mixins.auth-container(5vh, 45%, 75vh);
+    }
+}
+.reg__password-mismatch-top {
+  color: #d32f2f;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  margin: 8px 0 16px;
+}
+
+.reg__password-match {
+  color: #4caf50;
+  font-size: 14px;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.reg__form-error {
+  color: #d32f2f;
+  font-size: 14px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.reg__server-error {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.reg__password-requirements {
+  margin: 12px 0;
+  font-size: 13px;
+  color: #555;
+
+  ul {
+    margin: 8px 0;
+    padding-left: 20px;
+    list-style: none;
+
+    li {
+      position: relative;
+      padding-left: 8px;
+
+      &::before {
+        content: '✓';
+        color: #4caf50;
+        position: absolute;
+        left: -16px;
+      }
+    }
+  }
+}

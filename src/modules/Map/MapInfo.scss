@@ -1,0 +1,62 @@
+@use '@styles/variables.scss';
+@use '@styles/mixins.scss';
+
+.map-info {
+    display: flex;
+    justify-content: flex-start;
+    grid-row: 1 / span 2;
+    grid-column-start: 2;
+    height: 100%;
+    width: 100%;
+
+    &__container {
+        display: flex;
+        flex-direction: column;
+        row-gap: 3vh;
+        background-color: variables.$light-gray;
+        border-radius: variables.$radius-s;
+        padding: 4vh 4vw;
+        overflow-y: auto;
+        max-height: 60vh;
+    }
+
+    &__description {
+        font-weight: variables.$font-weight-regular;
+        font-size: variables.$font-size-xs;
+
+        &--mgb {
+            margin-bottom: 1vh;
+        }
+    }
+
+    &__list {
+        list-style: none;
+    }
+
+    &__item {
+        font-weight: variables.$font-weight-regular;
+        font-size: variables.$font-size-xs;
+
+        &:not(:last-child) {
+            margin-bottom: 1vh;
+        }
+    }
+}
+
+@media screen and (max-width: 767px) {
+    .map-info {
+        grid-row: auto;
+        grid-column-start: auto;
+
+        &__description,
+        &__item {
+            font-size: variables.$font-size-xxs;
+        }
+    }
+
+    .map-info__container {
+        overflow-y: visible;
+        max-height: none;
+        height: auto;
+    }
+}

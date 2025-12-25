@@ -1,0 +1,120 @@
+@use '@styles/variables.scss';
+@use '@styles/mixins.scss';
+
+.cards {
+    margin-bottom: 5vh;
+
+    &__title {
+        margin-top: 29px;
+        margin-left: 29px;
+        font-weight: variables.$font-weight-bold;
+        font-size: variables.$font-size-ml;
+    }
+
+    &__map {
+        height: 50vh;
+        width: 100%;
+        align-self: center;
+
+        &-container {
+            display: grid;
+            grid-template: auto auto / 50vw auto;
+            gap: 2em;
+            margin: 29px 29px 0;
+        }
+
+        &-popup {
+            max-height: 250px;
+            overflow-y: auto;
+            border-radius: variables.$radius-s;
+        }
+
+        &-info {
+            max-width: 100%;
+            grid-row-start: 2;
+        }
+
+        &-info-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: left;
+            gap: 15px;
+        }
+
+        &-info-item {
+            list-style: none;
+            cursor: pointer;
+
+            &-title {
+                font-size: variables.$font-size-xs;
+                -webkit-user-select: none; /* Safari */
+                -moz-user-select: none; /* Firefox */
+                -ms-user-select: none; /* IE 10+ */
+                user-select: none; /* Standard */
+            }
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+
+        &-title {
+            font-size: variables.$font-size-s;
+        }
+    }
+}
+
+.leaflet-popup-content {
+    .cards__map-popup__title {
+        margin-bottom: 0.5rem;
+    }
+
+    .cards__map-popup__description {
+        margin: 0;
+
+        &:last-child {
+            margin-bottom: 20px;
+        }
+    }
+}
+
+/* Plain text tooltip label near markers */
+.leaflet-tooltip.cards__map-label {
+    background: variables.$light-gray !important;
+    border: none !important;
+    color: variables.$black-color !important;
+    padding: 3px !important;
+    line-height: 1.2;
+}
+
+/* Hide tooltip arrow for all placement variants */
+.leaflet-tooltip.cards__map-label:before,
+.leaflet-tooltip-top.cards__map-label:before,
+.leaflet-tooltip-right.cards__map-label:before,
+.leaflet-tooltip-left.cards__map-label:before,
+.leaflet-tooltip-bottom.cards__map-label:before {
+    display: none !important;
+}
+
+@media screen and (max-width: 767px) {
+    .cards {
+        &__title {
+            font-size: variables.$font-size-s;
+        }
+
+        &__map {
+            &-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+
+            &-info {
+                grid-row-start: auto;
+
+                &-item-title {
+                    font-size: variables.$font-size-xxs;
+                }
+            }
+        }
+    }
+}

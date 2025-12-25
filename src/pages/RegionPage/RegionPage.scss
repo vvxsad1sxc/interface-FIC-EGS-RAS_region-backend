@@ -1,0 +1,162 @@
+.region-page {
+  padding: 100px 20px 40px;
+  min-height: calc(100vh - 80px);
+  max-width: 1400px;
+  margin: 0 auto;
+  
+  &__back {
+    margin-bottom: 30px;
+  }
+  
+  &__content {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 30px;
+    align-items: start;
+  }
+  
+  &__info {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    height: fit-content;
+  }
+  
+  &__map {
+    height: 600px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+}
+
+.region-info {
+  h1 {
+    margin: 0 0 15px 0;
+    color: #2c3e50;
+    font-size: 28px;
+  }
+  
+  .region-description {
+    color: #666;
+    margin: 0 0 25px 0;
+    line-height: 1.5;
+    font-size: 16px;
+  }
+  
+  h2 {
+    margin: 0 0 20px 0;
+    color: #2c3e50;
+    font-size: 22px;
+  }
+}
+
+.stations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.station-card {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 15px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: #007bff;
+    background: #e3f2fd;
+    transform: translateY(-2px);
+  }
+  
+  .station-code {
+    margin: 0 0 5px 0;
+    color: #007bff;
+    font-size: 16px;
+    font-family: monospace;
+    font-weight: bold;
+  }
+  
+  .station-name {
+    margin: 0 0 8px 0;
+    color: #2c3e50;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .station-coordinates {
+    margin: 0 0 8px 0;
+    color: #666;
+    font-size: 12px;
+  }
+  
+  .station-status {
+    font-size: 12px;
+    color: #28a745;
+    font-weight: 500;
+  }
+}
+
+.region-page__not-found {
+  text-align: center;
+  padding: 60px 20px;
+  
+  h1 {
+    color: #dc3545;
+    margin-bottom: 20px;
+  }
+}
+
+// Адаптивность
+@media (max-width: 1024px) {
+  .region-page {
+    &__content {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    
+    &__info {
+      order: 2;
+    }
+    
+    &__map {
+      order: 1;
+      height: 400px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .region-page {
+    padding: 90px 15px 30px;
+    
+    &__header {
+      h1 {
+        font-size: 24px;
+      }
+    }
+  }
+}

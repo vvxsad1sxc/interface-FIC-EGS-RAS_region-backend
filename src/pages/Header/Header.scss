@@ -1,0 +1,220 @@
+@use '@styles/variables.scss';
+@use '@styles/mixins.scss';
+
+.header {
+    &__container {
+        border-bottom: 4px solid variables.$main-color;
+    }
+
+    &__logo {
+        width: 100%;
+        max-width: 1600px;
+        background-color: variables.$main-color;
+
+        &-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: variables.$main-color;
+        }
+
+        &__link {
+            cursor: pointer;
+        }
+    }
+
+    &__nav-container {
+        margin: 10px 29px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        row-gap: 20px;
+    }
+
+    &__nav {
+        display: flex;
+        flex-wrap: wrap;
+
+    }
+
+    &__link {
+        color: variables.$black-color;
+        text-decoration-color: variables.$link-inactive;
+        // font-size: variables.$font-size-s;
+        transition: variables.$transition-slow text-decoration-color;
+
+        
+
+        &:not(:last-child) {
+            margin-right: 70px;
+        }
+
+        &:hover {
+            text-decoration-color: variables.$link-active;
+        }
+    }
+
+    &__auth {
+        &-slash {
+            color: variables.$black-color;
+            font-size: variables.$font-size-s;
+        }
+
+        &-link {
+            color: variables.$black-color;
+            text-decoration-color: variables.$link-inactive;
+            transition: variables.$transition-slow text-decoration-color;
+
+            &:hover {
+                text-decoration-color: variables.$link-active;
+            }
+        }
+    }
+
+    &-organization {
+        &__links {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 0 19px;
+            justify-content: space-between;
+            align-items: center;
+            background-color: variables.$main-color;
+            border-top: 4px solid variables.$white-color;
+        }
+
+        &__link {
+            color: variables.$white-color;
+            text-decoration-color: variables.$link-inactive;
+            transition: variables.$transition-slow text-decoration-color;
+            padding: 10px;
+
+            &:hover {
+                text-decoration-color: variables.$white-color;
+            }
+
+            &--active {
+                background-color: variables.$white-color;
+                color: variables.$main-color;
+                border: 2px solid variables.$main-color;
+
+                &:hover {
+                    text-decoration-color: variables.$main-color;
+                }
+                
+            }
+        }
+    }
+     &__nav {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    
+    // Стили для текущей страницы на регион-странице
+    .header__current-page {
+      font-weight: 600;
+      color: #007bff;
+      font-size: 16px;
+      padding: 8px 0;
+    }
+  }
+  
+  &__link {
+    color: rgb(21, 5, 250);
+    text-decoration: none;
+    padding: 8px 0;
+    transition: color 0.3s ease;
+    font-size: 16px;
+    
+    &:hover {
+      color: #80bdff;
+    }
+  }
+  
+  &__auth {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    &-link {
+      color: rgb(21, 5, 250);
+      text-decoration: none;
+      transition: color 0.3s ease;
+      font-size: 14px;
+      
+      &:hover {
+        color: #80bdff;
+      }
+    }
+    
+    &-slash {
+      color: #6c757d;
+    }
+  }
+}
+
+
+@media screen and (max-width: 767px) {
+    .header__link {
+        font-size: variables.$font-size-xxs;
+    }
+    .header__auth-slash {
+        font-size: variables.$font-size-xxs;
+    }
+    .header__auth-link {
+        font-size: variables.$font-size-xxs;
+    }
+    .header-organization__link {
+        font-size: variables.$font-size-xxs;
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .header__link {
+        font-size: variables.$font-size-xs;
+    }
+    .header__auth-slash {
+        font-size: variables.$font-size-xs;
+    }
+    .header__auth-link {
+        font-size: variables.$font-size-xs;
+    }
+    .header-organization__link {
+        font-size: variables.$font-size-xs;
+    }
+}
+.header__logout-btn {
+  background: none;
+  border: 1px solid #1202eb;
+  color: #2e00fa;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  
+  &:hover {
+    background-color: #4900f3;
+    color: white;
+  }
+}
+
+
+// Для очень узких экранов
+@media (max-width: 992px) {
+  .header {
+    &__controls {
+      gap: 10px;
+    }
+    
+    &__nav-container {
+      gap: 15px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    &__controls {
+      gap: 8px;
+    }
+  }
+}

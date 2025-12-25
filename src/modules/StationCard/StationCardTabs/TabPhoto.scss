@@ -1,0 +1,34 @@
+@use '@styles/variables.scss';
+
+.cards__station {
+    &__slider {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    &__button {
+        margin: 0 2vh;
+        transition: variables.$transition-fast transform;
+
+        &:active {
+            transform: scale(0.9);
+        }
+    }
+
+    &__counter {
+        text-align: center;
+        margin-top: 5px;
+        font-size: variables.$font-size-xs;
+        color: variables.$black-color;
+    }
+
+    &__photo {
+        padding-top: 2vh;
+    }
+
+    &--warning {
+        font-size: variables.$font-size-xs;
+        color: variables.$second-color;
+    }
+}

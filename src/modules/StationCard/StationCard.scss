@@ -1,0 +1,119 @@
+@use '@styles/variables.scss';
+
+.cards__station {
+    display: flex;
+    justify-content: flex-start;
+    grid-row: 1 / span 2;
+    grid-column-start: 2;
+    height: 100%;
+    width: 100%;
+    
+    &-container {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 30px 50px;
+        background-color: variables.$light-gray;
+        border-radius: variables.$radius-s;
+        overflow-y: auto;
+        max-height: 60vh;
+        position: relative;
+    }
+
+    &-links {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &-link {
+        margin-bottom: 3vh;
+        background-color: variables.$white-color;
+        border: 1px solid variables.$black-color;
+        color: variables.$black-color;
+        font-size: variables.$font-size-xs;
+    }
+
+    &__titles {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding-bottom: 2vh;
+        margin-bottom: 3vh;
+    }
+
+    &__title {
+        text-align: center;
+        font-weight: variables.$font-weight-bold;
+        font-size: variables.$font-size-s;
+        color: variables.$black-color;
+        // border-bottom: 1px solid variables.$second-color;
+    }
+
+    &__link {
+        font-weight: variables.$font-weight-regular;
+        font-size: variables.$font-size-xs;
+        color: variables.$second-color;
+        text-decoration-color: variables.$link-inactive;
+        transition: variables.$transition-slow text-decoration-color;
+
+        &:hover {
+            text-decoration-color: variables.$second-color;
+        }
+    }
+
+    &__close {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: none;
+        color: variables.$second-color;
+        font-size: variables.$font-size-m;
+        line-height: 28px;
+        cursor: pointer;
+        padding: 0;
+        transition: color variables.$transition-medium, transform variables.$transition-fast;
+
+        &:hover {
+            color: variables.$black-color;
+            transform: scale(1.05);
+        }
+
+        &:active {
+            transform: scale(0.98);
+        }
+    }
+
+    &__subtitle {
+        margin-bottom: 2vh;
+        padding-top: 2vh;
+        font-weight: variables.$font-weight-bold;
+        font-size: variables.$font-size-s;
+        color: variables.$black-color;
+    }
+
+    &__description {
+        font-weight: variables.$font-weight-regular;
+        font-size: variables.$font-size-xs;
+        color: variables.$black-color;
+        
+        &:not(:last-child) {
+            margin-bottom: 2.5vh;
+        }
+    }
+}
+
+@media screen and (max-width: 767px) {
+    .cards__station {
+        grid-row: auto;
+        grid-column-start: auto;
+    }
+
+    .cards__station-container {
+        overflow-y: visible;
+        max-height: none;
+        height: auto;
+    }
+}
