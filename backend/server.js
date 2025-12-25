@@ -127,7 +127,7 @@ const startServer = async () => {
       }
     }
 
-    // 4. Готово!
+    
     console.log('Все сервисы инициализированы.');
   } catch (err) {
     console.error('Критическая ошибка при запуске:', err);
@@ -136,4 +136,5 @@ const startServer = async () => {
 };
 
 // Запуск
+
 startServer();
