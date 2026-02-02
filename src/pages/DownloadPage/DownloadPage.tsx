@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import './DownloadPage.scss';
 
-// Интерфейс для данных о полноте
 interface FullnessData {
   station: string;
-  date: string; 
-  fullness: number; 
+  date: string;
+  fullness: number;
 }
 
 const DownloadPage: React.FC = () => {
@@ -24,6 +23,8 @@ const DownloadPage: React.FC = () => {
   const [showFullnessTable, setShowFullnessTable] = useState(false);
   const [currentYear, setCurrentYear] = useState<number>(new Date().getFullYear());
 
+  const stations = ['vlkz', 'ard2', 'latz', 'laz2', 'ardn', 'kamt', 'prtn'];
+
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -35,19 +36,18 @@ const DownloadPage: React.FC = () => {
     }
   }, [user, navigate]);
 
-  const stations = ['vlkz', 'ard2', 'latz', 'laz2', 'ardn', 'kamt', 'prtn'];
-
   const handleBackClick = () => navigate('/Stations');
+
   const handleStationToggle = (station: string) => {
     setSelectedStations(prev =>
       prev.includes(station) ? prev.filter(s => s !== station) : [...prev, station]
     );
   };
+
   const handleSelectAll = () => {
     setSelectedStations(stations.length === selectedStations.length ? [] : stations);
   };
 
-  // Функция для преобразования даты в формат ДД.ММ.ГГГГ
   const formatToDisplay = (date: Date): string => {
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -55,15 +55,25 @@ const DownloadPage: React.FC = () => {
     return `${day}.${month}.${year}`;
   };
 
-  // Функция для преобразования строки ДД.ММ.ГГГГ в ISO
   const formatToISO = (input: string): string | null => {
     const match = input.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
     if (!match) return null;
     const [_, d, m, y] = match;
+    const day = parseInt(d);
+    const month = parseInt(m);
+    const year = parseInt(y);
+    
+    if (month < 1 || month > 12) return null;
+    if (day < 1 || day > 31) return null;
+    
+    const date = new Date(year, month - 1, day);
+    if (date.getDate() !== day || date.getMonth() + 1 !== month || date.getFullYear() !== year) {
+      return null;
+    }
+    
     return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
   };
 
-  // Функция для преобразования даты в день года (1-366)
   const getDayOfYear = (date: Date): number => {
     const start = new Date(date.getFullYear(), 0, 0);
     const diff = date.getTime() - start.getTime();
@@ -71,188 +81,296 @@ const DownloadPage: React.FC = () => {
     return Math.floor(diff / oneDay);
   };
 
-  // Функция для получения года из даты
   const getYear = (date: Date): number => {
     return date.getFullYear();
   };
 
-  // Обработчик выбора даты из календаря
   const handleCalendarSelect = (date: Date, type: 'start' | 'end') => {
     const formattedDate = formatToDisplay(date);
     if (type === 'start') {
       setStartDate(formattedDate);
       setShowStartCalendar(false);
       setCurrentYear(date.getFullYear());
+      
+      if (endDate) {
+        const endISO = formatToISO(endDate);
+        if (endISO) {
+          const endDateObj = new Date(endISO);
+          if (date > endDateObj) {
+            setEndDate('');
+            setFullnessData([]);
+            setShowFullnessTable(false);
+          }
+        }
+      }
     } else {
       setEndDate(formattedDate);
       setShowEndCalendar(false);
     }
   };
 
-  // Функция для просмотра полноты данных (ИСПРАВЛЕНА)
   const handleViewFullness = async () => {
-    if (selectedStations.length === 0) return alert('Выберите хотя бы одну станцию');
-    if (!startDate || !endDate) return alert('Укажите временной период');
+    if (selectedStations.length === 0) {
+      alert('Выберите хотя бы одну станцию');
+      return;
+    }
+    
+    if (!startDate || !endDate) {
+      alert('Укажите начальную и конечную даты');
+      return;
+    }
 
     const startISO = formatToISO(startDate);
     const endISO = formatToISO(endDate);
-    if (!startISO || !endISO) return alert('Неверный формат даты. Используйте: ДД.ММ.ГГГГ');
+    
+    if (!startISO || !endISO) {
+      alert('Неверный формат даты. Используйте: ДД.ММ.ГГГГ');
+      return;
+    }
 
-    // Преобразуем даты в дни года
     const startDateObj = new Date(startISO);
     const endDateObj = new Date(endISO);
+    
+    if (startDateObj > endDateObj) {
+      alert('Начальная дата не может быть больше конечной');
+      return;
+    }
+
+    if (startDateObj.getFullYear() !== endDateObj.getFullYear()) {
+      alert('Даты должны быть в пределах одного года');
+      return;
+    }
+
     const year = getYear(startDateObj);
     const dayStart = getDayOfYear(startDateObj);
     const dayEnd = getDayOfYear(endDateObj);
-
-    // Проверяем, что даты в пределах одного года
-    if (startDateObj.getFullYear() !== endDateObj.getFullYear()) {
-      return alert('Выберите даты в пределах одного года');
-    }
 
     const payload = {
       stations: selectedStations,
       year: year,
       dayStart: dayStart,
       dayEnd: dayEnd,
-      userId: user.id,
+      userId: user?.id || '',
     };
 
     setIsViewLoading(true);
     setShowFullnessTable(false);
 
     try {
-      const resp = await fetch('http://localhost:3001/api/view-fullness', {
+      const response = await fetch('http://localhost:3001/api/view-fullness', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      if (!resp.ok) {
+      if (!response.ok) {
+        const errorText = await response.text();
         let errorMessage = 'Ошибка сервера';
+        
         try {
-          const errorText = await resp.text();
-          if (errorText) {
-            try {
-              const errorJson = JSON.parse(errorText);
-              errorMessage = errorJson.error || errorMessage;
-            } catch {
-              errorMessage = errorText || errorMessage;
-            }
-          }
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.error || errorJson.message || errorMessage;
         } catch {
-          errorMessage = `HTTP error! status: ${resp.status}`;
+          errorMessage = errorText || `HTTP error! status: ${response.status}`;
         }
+        
         throw new Error(errorMessage);
       }
 
-      const result = await resp.json();
+      const result = await response.json();
       
-      // Преобразуем данные из формата бэкенда в формат фронтенда
+      if (!result.success) {
+        throw new Error(result.error || 'Не удалось загрузить данные о полноте');
+      }
+
       const transformedData: FullnessData[] = [];
       
-      if (result.success && result.data) {
+      if (result.data && result.stations && result.dayRange) {
         const { data, stations: resultStations, dayRange } = result;
         
-        console.log('Полученные данные с сервера:', {
-          resultStations,
-          dayRange,
-          sampleData: data[dayRange.start]
-        });
-        
-        // Проходим по всем дням
         for (let day = dayRange.start; day <= dayRange.end; day++) {
-          const dayData = data[day];
-          if (dayData) {
-            // Проходим по всем станциям
-            resultStations.forEach((station: string) => {
-              const fullnessValue = dayData[station];
-              if (fullnessValue !== null && fullnessValue !== undefined) {
-                // Преобразуем строку "100.0" в число от 0.0 до 1.0 (делим на 100)
-                const fullnessNumber = parseFloat(fullnessValue) / 100;
-                
-                transformedData.push({
-                  station: station,
-                  date: day.toString(), // день года как строка
-                  fullness: fullnessNumber // число от 0.0 до 1.0
-                });
-              } else {
-                // Если данных нет, добавляем 0
-                transformedData.push({
-                  station: station,
-                  date: day.toString(),
-                  fullness: 0
-                });
-              }
+          const dayData = data[day] || {};
+          
+          resultStations.forEach((station: string) => {
+            let fullnessValue = dayData[station];
+            
+            if (fullnessValue === null || fullnessValue === undefined || fullnessValue === '') {
+              fullnessValue = 0;
+            } else if (typeof fullnessValue === 'string') {
+              fullnessValue = parseFloat(fullnessValue);
+              if (isNaN(fullnessValue)) fullnessValue = 0;
+            }
+            
+            if (fullnessValue > 1) {
+              fullnessValue = fullnessValue / 100;
+            }
+            
+            transformedData.push({
+              station: station,
+              date: day.toString(),
+              fullness: fullnessValue
             });
-          } else {
-            // Если нет данных для дня, добавляем нули для всех станций
-            resultStations.forEach((station: string) => {
-              transformedData.push({
-                station: station,
-                date: day.toString(),
-                fullness: 0
-              });
-            });
-          }
+          });
         }
       }
       
-      console.log('Трансформированные данные:', transformedData);
       setFullnessData(transformedData);
       setShowFullnessTable(true);
       
     } catch (err: any) {
       console.error('View fullness error:', err);
-      
-      // Более конкретные сообщения об ошибках
-      if (err.message.includes('stream.setNoDelay') || err.message.includes('stream')) {
-        alert('Ошибка в конфигурации сервера API. Пожалуйста, сообщите администратору о проблеме с потоком данных.');
-      } else {
-        alert(err.message || 'Не удалось загрузить данные о полноте');
-      }
+      alert(err.message || 'Не удалось загрузить данные о полноте');
     } finally {
       setIsViewLoading(false);
     }
   };
 
-  // Функция для подготовки данных к отображению в таблице
   const prepareTableData = () => {
     if (!fullnessData.length) return { stations: [], dates: [], data: {} };
 
-    // Получаем уникальные станции и даты (дни года)
-    const stations = Array.from(new Set(fullnessData.map(item => item.station))).sort();
-    const dates = Array.from(new Set(fullnessData.map(item => item.date))).sort((a, b) => parseInt(a) - parseInt(b));
+    const uniqueStations = Array.from(new Set(fullnessData.map(item => item.station))).sort();
+    const uniqueDates = Array.from(new Set(fullnessData.map(item => item.date))).sort((a, b) => parseInt(a) - parseInt(b));
     
-    // Создаем структуру данных для таблицы
     const tableData: { [key: string]: { [key: string]: number } } = {};
     
-    stations.forEach(station => {
+    uniqueStations.forEach(station => {
       tableData[station] = {};
-      dates.forEach(date => {
+      uniqueDates.forEach(date => {
         const record = fullnessData.find(item => item.station === station && item.date === date);
-        // Уже преобразовано в число от 0.0 до 1.0
         tableData[station][date] = record ? record.fullness : 0;
       });
     });
 
-    return { stations, dates, data: tableData };
+    return { stations: uniqueStations, dates: uniqueDates, data: tableData };
   };
 
-  // Функция для форматирования дня года в читаемую дату
-  const formatDayOfYear = (dayOfYear: string) => {
+  const formatDayOfYear = (dayOfYear: string): string => {
     const dayNum = parseInt(dayOfYear);
-    const date = new Date(currentYear, 0); // 1 января текущего года
-    date.setDate(dayNum); // Устанавливаем день года
-    
+    const date = new Date(currentYear, 0, dayNum);
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     return `${day}.${month}`;
   };
 
-  const tableData = prepareTableData();
+  const handleDownload = async () => {
+    if (selectedStations.length === 0) {
+      alert('Выберите хотя бы одну станцию');
+      return;
+    }
+    
+    if (!startDate || !endDate) {
+      alert('Укажите начальную и конечную даты');
+      return;
+    }
 
-  // Компонент календаря
+    const startISO = formatToISO(startDate);
+    const endISO = formatToISO(endDate);
+    
+    if (!startISO || !endISO) {
+      alert('Неверный формат даты. Используйте: ДД.ММ.ГГГГ');
+      return;
+    }
+
+    const startDateObj = new Date(startISO);
+    const endDateObj = new Date(endISO);
+    
+    if (startDateObj > endDateObj) {
+      alert('Начальная дата не может быть больше конечной');
+      return;
+    }
+
+    if (startDateObj.getFullYear() !== endDateObj.getFullYear()) {
+      alert('Даты должны быть в пределах одного года');
+      return;
+    }
+
+    const payload = {
+      stations: selectedStations,
+      startDate: startISO,
+      endDate: endISO,
+      userId: user?.id || '',
+    };
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:3001/api/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage = 'Ошибка сервера';
+        
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.error || errorJson.message || errorMessage;
+        } catch {
+          errorMessage = errorText || `HTTP error! status: ${response.status}`;
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      const contentType = response.headers.get('content-type');
+      
+      if (contentType && contentType.includes('application/zip')) {
+        const blob = await response.blob();
+        
+        if (blob.size === 0) {
+          throw new Error('Получен пустой архив');
+        }
+
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        
+        const contentDisposition = response.headers.get('content-disposition');
+        let filename = 'data.zip';
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+          if (filenameMatch) {
+            filename = filenameMatch[1];
+          }
+        }
+        
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        alert('Файл успешно скачан!');
+        
+      } else if (contentType && contentType.includes('application/json')) {
+        const result = await response.json();
+        if (result.success === false) {
+          throw new Error(result.error || 'Неизвестная ошибка');
+        } else {
+          alert('Операция выполнена успешно, но файл не был сгенерирован');
+        }
+      } else {
+        throw new Error('Неожиданный формат ответа от сервера');
+      }
+
+    } catch (err: any) {
+      console.error('Download error:', err);
+      alert(err.message || 'Не удалось скачать данные');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClear = () => {
+    setSelectedStations([]);
+    setStartDate('');
+    setEndDate('');
+    setFullnessData([]);
+    setShowFullnessTable(false);
+  };
+
   const Calendar: React.FC<{
     selectedDate: string;
     onSelect: (date: Date) => void;
@@ -260,7 +378,6 @@ const DownloadPage: React.FC = () => {
   }> = ({ selectedDate, onSelect, onClose }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
     
-    // Парсим выбранную дату если она есть
     const selectedDateObj = selectedDate ? (() => {
       const [day, month, year] = selectedDate.split('.').map(Number);
       return new Date(year, month - 1, day);
@@ -272,29 +389,24 @@ const DownloadPage: React.FC = () => {
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
     
-    // Создаем массив дней месяца
     const days = [];
     for (let i = 1; i <= daysInMonth; i++) {
       days.push(new Date(currentYear, currentMonth, i));
     }
 
-    // Переход к предыдущему месяцу
     const prevMonth = () => {
       setCurrentDate(new Date(currentYear, currentMonth - 1, 1));
     };
 
-    // Переход к следующему месяцу
     const nextMonth = () => {
       setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
     };
 
-    // Проверяем, является ли день сегодняшним днем
     const isToday = (date: Date) => {
       const today = new Date();
       return date.toDateString() === today.toDateString();
     };
 
-    // Проверяем, является ли день выбранным
     const isSelected = (date: Date) => {
       return selectedDateObj && date.toDateString() === selectedDateObj.toDateString();
     };
@@ -322,12 +434,10 @@ const DownloadPage: React.FC = () => {
               <div key={day} className="calendar-day-header">{day}</div>
             ))}
             
-            {/* Пустые ячейки для дней предыдущего месяца */}
             {Array.from({ length: (firstDayOfMonth + 6) % 7 }, (_, i) => (
               <div key={`empty-${i}`} className="calendar-day empty"></div>
             ))}
             
-            {/* Дни текущего месяца */}
             {days.map(date => (
               <div
                 key={date.getDate()}
@@ -347,113 +457,6 @@ const DownloadPage: React.FC = () => {
     );
   };
 
-  const handleDownload = async () => {
-    if (selectedStations.length === 0) return alert('Выберите хотя бы одну станцию');
-    if (!startDate || !endDate) return alert('Укажите временной период');
-
-    const startISO = formatToISO(startDate);
-    const endISO = formatToISO(endDate);
-    if (!startISO || !endISO) return alert('Неверный формат даты. Используйте: ДД.ММ.ГГГГ');
-
-    const payload = {
-      stations: selectedStations,
-      startDate: startISO,
-      endDate: endISO,
-      userId: user.id,
-    };
-
-    setIsLoading(true);
-
-    try {
-      const resp = await fetch('/api/download', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!resp) {
-        throw new Error('Нет ответа от сервера');
-      }
-
-      if (!resp.ok) {
-        let errorMessage = 'Ошибка сервера';
-        try {
-          const errorText = await resp.text();
-          if (errorText) {
-            try {
-              const errorJson = JSON.parse(errorText);
-              errorMessage = errorJson.error || errorMessage;
-            } catch {
-              errorMessage = errorText || errorMessage;
-            }
-          }
-        } catch {
-          errorMessage = `HTTP error! status: ${resp.status}`;
-        }
-        throw new Error(errorMessage);
-      }
-
-      const contentType = resp.headers.get('content-type');
-      
-      if (contentType && contentType.includes('application/zip')) {
-        const blob = await resp.blob();
-        
-        if (blob.size === 0) {
-          throw new Error('Получен пустой архив');
-        }
-
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        
-        const contentDisposition = resp.headers.get('content-disposition');
-        let filename = 'data.zip';
-        if (contentDisposition) {
-          const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-          if (filenameMatch) {
-            filename = filenameMatch[1];
-          }
-        }
-        
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-        
-        alert('Файл успешно скачан!');
-        
-      } else if (contentType && contentType.includes('application/json')) {
-        const result = await resp.json();
-        if (result.success === false) {
-          throw new Error(result.error || 'Неизвестная ошибка');
-        } else {
-          alert('Операция выполнена успешно, но файл не был сгенерирован');
-        }
-      } else {
-        const text = await resp.text();
-        if (text) {
-          console.warn('Неожиданный ответ от сервера:', text);
-        }
-        throw new Error('Неожиданный формат ответа от сервера');
-      }
-
-    } catch (err: any) {
-      console.error('Download error:', err);
-      alert(err.message || 'Не удалось скачать данные');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleClear = () => {
-    setSelectedStations([]);
-    setStartDate('');
-    setEndDate('');
-    setFullnessData([]);
-    setShowFullnessTable(false);
-  };
-
   if (!user || user.status !== 'active') {
     return (
       <div className="download-page">
@@ -464,6 +467,8 @@ const DownloadPage: React.FC = () => {
       </div>
     );
   }
+
+  const tableData = prepareTableData();
 
   return (
     <section className='download-page'>
@@ -514,6 +519,13 @@ const DownloadPage: React.FC = () => {
                   placeholder="ДД.ММ.ГГГГ"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
+                  onBlur={(e) => {
+                    const iso = formatToISO(e.target.value);
+                    if (!iso && e.target.value) {
+                      alert('Неверный формат даты. Используйте: ДД.ММ.ГГГГ');
+                      setStartDate('');
+                    }
+                  }}
                   disabled={isLoading || isViewLoading}
                 />
                 <button 
@@ -541,6 +553,13 @@ const DownloadPage: React.FC = () => {
                   placeholder="ДД.ММ.ГГГГ"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
+                  onBlur={(e) => {
+                    const iso = formatToISO(e.target.value);
+                    if (!iso && e.target.value) {
+                      alert('Неверный формат даты. Используйте: ДД.ММ.ГГГГ');
+                      setEndDate('');
+                    }
+                  }}
                   disabled={isLoading || isViewLoading}
                 />
                 <button 
@@ -567,14 +586,14 @@ const DownloadPage: React.FC = () => {
           <button 
             className="action-button download" 
             onClick={handleDownload}
-            disabled={isLoading || isViewLoading}
+            disabled={isLoading || isViewLoading || !selectedStations.length || !startDate || !endDate}
           >
             {isLoading ? 'Скачивание...' : 'Скачать архив'}
           </button>
           <button 
             className="action-button view" 
             onClick={handleViewFullness}
-            disabled={isLoading || isViewLoading}
+            disabled={isViewLoading || !selectedStations.length || !startDate || !endDate}
           >
             {isViewLoading ? 'Загрузка...' : 'Просмотреть полноту'}
           </button>
@@ -587,12 +606,12 @@ const DownloadPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Таблица полноты данных */}
         {showFullnessTable && (
           <div className="fullness-table">
-            <h3>Полнота данных (Fullness)</h3>
+            <h3>Полнота данных</h3>
             <div className="table-info">
-              <p>Показаны данные за выбранный период</p>
+              <p>Год: {currentYear}</p>
+              <p>Период: {startDate} - {endDate}</p>
             </div>
             <div className="table-container">
               <table>
@@ -610,25 +629,21 @@ const DownloadPage: React.FC = () => {
                   {tableData.stations.map(station => (
                     <tr key={station}>
                       <td className="station-name">{station.toUpperCase()}</td>
-                      {tableData.dates.map(date => (
-                        <td 
-                          key={`${station}-${date}`}
-                          
-                          title={`Станция: ${station}, День: ${date}, Fullness: ${(tableData.data[station][date] * 100).toFixed(1)}%`}
-                        >
-                          {tableData.data[station][date] > 0 ? 
-                            (tableData.data[station][date] * 100).toFixed(2) + '%' : 
-                            'N/A'
-                          }
-                        </td>
-                      ))}
+                      {tableData.dates.map(date => {
+                        const fullness = tableData.data[station][date];
+                        return (
+                          <td 
+                            key={`${station}-${date}`}
+                            title={`${station.toUpperCase()}, ${formatDayOfYear(date)}: ${(fullness * 100).toFixed(1)}%`}
+                          >
+                            {fullness > 0 ? `${(fullness * 100).toFixed(1)}%` : '0%'}
+                          </td>
+                        );
+                      })}
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-            <div className="table-legend">
-          
             </div>
           </div>
         )}
