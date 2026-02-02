@@ -198,7 +198,7 @@ async function createZipArchive(localFiles, archivePath) {
     localFiles.forEach(file => {
       const fileName = path.basename(file);
       archive.file(file, { name: fileName });
-      console.log(`🗜️ Добавлен в архив: ${fileName}`);
+      console.log(`Добавлен в архив: ${fileName}`);
     });
 
     archive.finalize();
@@ -269,7 +269,4 @@ export {
   cleanupTmp,
   getDayOfYear,
   downloadAndArchiveFiles
-
 };
-
-
