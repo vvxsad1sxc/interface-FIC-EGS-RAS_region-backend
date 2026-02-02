@@ -1,0 +1,323 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 16.0
+-- Dumped by pg_dump version 16.3
+
+-- Started on 2026-02-02 12:51:28
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 220 (class 1259 OID 18347)
+-- Name: password_reset_tokens; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.password_reset_tokens (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    token character varying(255) NOT NULL,
+    expires_at timestamp without time zone NOT NULL,
+    used boolean DEFAULT false,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.password_reset_tokens OWNER TO postgres;
+
+--
+-- TOC entry 219 (class 1259 OID 18346)
+-- Name: password_reset_tokens_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.password_reset_tokens_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.password_reset_tokens_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4824 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: password_reset_tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.password_reset_tokens_id_seq OWNED BY public.password_reset_tokens.id;
+
+
+--
+-- TOC entry 216 (class 1259 OID 18292)
+-- Name: roles; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.roles (
+    id integer NOT NULL,
+    name character varying(50) NOT NULL,
+    description text,
+    permissions jsonb DEFAULT '[]'::jsonb
+);
+
+
+ALTER TABLE public.roles OWNER TO postgres;
+
+--
+-- TOC entry 215 (class 1259 OID 18291)
+-- Name: roles_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.roles_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.roles_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4825 (class 0 OID 0)
+-- Dependencies: 215
+-- Name: roles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.roles_id_seq OWNED BY public.roles.id;
+
+
+--
+-- TOC entry 218 (class 1259 OID 18304)
+-- Name: users; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.users (
+    id integer NOT NULL,
+    name character varying(100) NOT NULL,
+    email character varying(255) NOT NULL,
+    organization character varying(255),
+    password character varying(255) NOT NULL,
+    role_id integer DEFAULT 1 NOT NULL,
+    status character varying(20) DEFAULT 'pending'::character varying,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    approved_by integer,
+    approved_at timestamp without time zone
+);
+
+
+ALTER TABLE public.users OWNER TO postgres;
+
+--
+-- TOC entry 217 (class 1259 OID 18303)
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.users_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.users_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4826 (class 0 OID 0)
+-- Dependencies: 217
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
+
+
+--
+-- TOC entry 4651 (class 2604 OID 18350)
+-- Name: password_reset_tokens id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.password_reset_tokens ALTER COLUMN id SET DEFAULT nextval('public.password_reset_tokens_id_seq'::regclass);
+
+
+--
+-- TOC entry 4644 (class 2604 OID 18295)
+-- Name: roles id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.roles ALTER COLUMN id SET DEFAULT nextval('public.roles_id_seq'::regclass);
+
+
+--
+-- TOC entry 4646 (class 2604 OID 18307)
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- TOC entry 4818 (class 0 OID 18347)
+-- Dependencies: 220
+-- Data for Name: password_reset_tokens; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.password_reset_tokens (id, user_id, token, expires_at, used, created_at, updated_at) VALUES (23, 143, '949a310e7bb2ef820ee4408fe73ca329bd6c9c6b4f37b903adb96071f2bbf3b9', '2026-02-02 13:02:33.428', true, '2026-02-02 12:02:33.428811', '2026-02-02 12:02:33.428811');
+INSERT INTO public.password_reset_tokens (id, user_id, token, expires_at, used, created_at, updated_at) VALUES (24, 143, 'df2c523cbd16d45e87eec9def5ad124dd7a04c34ccb6c3fd99f55b8f1dcdb43f', '2026-02-02 13:37:59.933', true, '2026-02-02 12:37:59.933638', '2026-02-02 12:37:59.933638');
+
+
+--
+-- TOC entry 4814 (class 0 OID 18292)
+-- Dependencies: 216
+-- Data for Name: roles; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.roles (id, name, description, permissions) VALUES (1, 'user', 'Обычный пользователь', '["read_own_data"]');
+INSERT INTO public.roles (id, name, description, permissions) VALUES (2, 'verified', 'Подтвержденный пользователь', '["read_own_data", "export_data", "view_stations"]');
+INSERT INTO public.roles (id, name, description, permissions) VALUES (3, 'admin', 'Администратор', '["read_own_data", "export_data", "view_stations", "manage_users", "manage_exports", "system_admin"]');
+
+
+--
+-- TOC entry 4816 (class 0 OID 18304)
+-- Dependencies: 218
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.users (id, name, email, organization, password, role_id, status, created_at, updated_at, approved_by, approved_at) VALUES (1, 'admin', 'admin@system.com', 'System', '$2a$10$uMtJ4pc.SICkOCiyUcnNNeOJ0OUIkgwa1nsFEF49hxSfKbWpy94ji', 3, 'active', '2025-11-04 15:29:48.752639', '2025-11-04 15:29:48.752639', NULL, NULL);
+INSERT INTO public.users (id, name, email, organization, password, role_id, status, created_at, updated_at, approved_by, approved_at) VALUES (143, 'bhvc', 'balakovooleg@gmail.com', 'vcx', '$2a$12$JRCMz5KV/.27P39rrs60KOrFhRNWCCQ612XPAxRb.3khlpWU7VfI2', 2, 'active', '2026-02-02 12:01:59.136088', '2026-02-02 12:02:07.70794', 1, '2026-02-02 12:02:07.70794');
+
+
+--
+-- TOC entry 4827 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: password_reset_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.password_reset_tokens_id_seq', 24, true);
+
+
+--
+-- TOC entry 4828 (class 0 OID 0)
+-- Dependencies: 215
+-- Name: roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.roles_id_seq', 1, false);
+
+
+--
+-- TOC entry 4829 (class 0 OID 0)
+-- Dependencies: 217
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.users_id_seq', 149, true);
+
+
+--
+-- TOC entry 4664 (class 2606 OID 18355)
+-- Name: password_reset_tokens password_reset_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.password_reset_tokens
+    ADD CONSTRAINT password_reset_tokens_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4666 (class 2606 OID 18357)
+-- Name: password_reset_tokens password_reset_tokens_token_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.password_reset_tokens
+    ADD CONSTRAINT password_reset_tokens_token_key UNIQUE (token);
+
+
+--
+-- TOC entry 4656 (class 2606 OID 18302)
+-- Name: roles roles_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.roles
+    ADD CONSTRAINT roles_name_key UNIQUE (name);
+
+
+--
+-- TOC entry 4658 (class 2606 OID 18300)
+-- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.roles
+    ADD CONSTRAINT roles_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4660 (class 2606 OID 18317)
+-- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key UNIQUE (email);
+
+
+--
+-- TOC entry 4662 (class 2606 OID 18315)
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4669 (class 2606 OID 18358)
+-- Name: password_reset_tokens password_reset_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.password_reset_tokens
+    ADD CONSTRAINT password_reset_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4667 (class 2606 OID 18323)
+-- Name: users users_approved_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_approved_by_fkey FOREIGN KEY (approved_by) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 4668 (class 2606 OID 18318)
+-- Name: users users_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.roles(id);
+
+
+-- Completed on 2026-02-02 12:51:28
+
+--
+-- PostgreSQL database dump complete
+--
+
