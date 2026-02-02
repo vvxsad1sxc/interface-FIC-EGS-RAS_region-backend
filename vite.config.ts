@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   plugins: [react()],
+  assetsInclude: ['**/*.JPG', '**/*.jpg', '**/*.jpeg', '**/*.PNG', '**/*.png', '**/*.gif', '**/*.svg', '**/*.webp'],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -21,7 +22,7 @@ export default defineConfig({
       '@types': path.resolve(__dirname, './src/types'),
     },
   },
-  // ДОБАВЬТЕ ЭТОТ БЛОК:
+
   server: {
     proxy: {
       '/api': {
