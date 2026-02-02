@@ -11,7 +11,7 @@ dotenv.config();
 const SERVER2_HOST = process.env.SERVER2_HOST || '172.20.1.177';
 const SERVER2_USER = process.env.SERVER2_USER || 'skleminos';
 const SERVER2_PASSWORD = process.env.SERVER2_PASSWORD; // ОБЯЗАТЕЛЬНО указать в .env
-const SERVER2_ROOT = process.env.SERVER2_ROOT || '/home/skleminos';
+const SERVER2_ROOT = process.env.SERVER2_ROOT || '/mnt/disk/gpsdata/Region/KavNet';
 
 /**
  * Установка SSH соединения с паролем
@@ -269,4 +269,5 @@ export {
   cleanupTmp,
   getDayOfYear,
   downloadAndArchiveFiles
+
 };
