@@ -50,7 +50,7 @@ async function createSSHConnection() {
 }
 
 /**
- * Формирует имя файла: vlkz203.25d.Z
+ * Формирует имя файла: vlkz2030.25d.Z
  */
 function buildFileName(station, year, dayOfYear) {
   const year2 = String(year).slice(-2);
@@ -59,7 +59,7 @@ function buildFileName(station, year, dayOfYear) {
 }
 
 /**
- * Путь на сервере-2: /home/skleminos/2025/203/vlkz203.25d.Z
+ * Путь на сервере-2: /mnt/disk/gpsdata/Region/KavNet/2025/203/vlkz2030.25d.Z
  */
 function buildRemotePath(root, year, dayOfYear, fileName) {
   const dayStr = String(dayOfYear).padStart(3, '0');
@@ -271,3 +271,4 @@ export {
   downloadAndArchiveFiles
 
 };
+
