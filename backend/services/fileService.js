@@ -22,15 +22,15 @@ async function createSSHConnection() {
     
     conn
       .on('ready', () => {
-        console.log('✅ SSH подключение установлено');
+        console.log('SSH подключение установлено');
         resolve(conn);
       })
       .on('error', (err) => {
-        console.error('❌ Ошибка SSH подключения:', err.message);
+        console.error('Ошибка SSH подключения:', err.message);
         reject(err);
       })
       .on('close', () => {
-        console.log('🔌 SSH соединение закрыто');
+        console.log('SSH соединение закрыто');
       })
       .connect({
         host: SERVER2_HOST,
@@ -95,7 +95,7 @@ async function findFilesOnServer2(station, year, dayStart, dayEnd) {
           await new Promise((res, rej) => {
             sftp.stat(remoteFile, (err) => {
               if (!err) {
-                console.log(`✅ Найден файл: ${remoteFile}`);
+                console.log(`Найден файл: ${remoteFile}`);
                 remotePaths.push(remoteFile);
               }
               res();
@@ -134,21 +134,21 @@ async function copyFilesToLocal(remotePaths, localDir) {
 
       try {
         await fs.promises.mkdir(localDir, { recursive: true });
-        console.log(`📁 Создана локальная папка: ${localDir}`);
+        console.log(`Создана локальная папка: ${localDir}`);
 
         for (const remote of remotePaths) {
           const fileName = path.basename(remote);
           const localFile = path.join(localDir, fileName);
           
-          console.log(`📥 Копируем: ${fileName}`);
+          console.log(`Копируем: ${fileName}`);
           
           await new Promise((res, rej) => {
             sftp.fastGet(remote, localFile, (err) => {
               if (err) {
-                console.error(`❌ Ошибка копирования ${fileName}:`, err.message);
+                console.error(`Ошибка копирования ${fileName}:`, err.message);
                 rej(err);
               } else {
-                console.log(`✅ Скопирован: ${fileName}`);
+                console.log(`Скопирован: ${fileName}`);
                 localPaths.push(localFile);
                 res();
               }
@@ -157,7 +157,7 @@ async function copyFilesToLocal(remotePaths, localDir) {
         }
 
         conn.end();
-        console.log(`📊 Скопировано файлов: ${localPaths.length}`);
+        console.log(`Скопировано файлов: ${localPaths.length}`);
         resolve(localPaths);
       } catch (err) {
         conn.end();
@@ -180,14 +180,14 @@ async function createZipArchive(localFiles, archivePath) {
     const archive = archiver('zip', { zlib: { level: 9 } });
 
     output.on('close', () => {
-      console.log(`📦 ZIP создан: ${archivePath} (${archive.pointer()} байт)`);
+      console.log(`ZIP создан: ${archivePath} (${archive.pointer()} байт)`);
       resolve(archivePath);
     });
     
     archive.on('error', reject);
     archive.on('warning', (err) => {
       if (err.code === 'ENOENT') {
-        console.warn('⚠️ Предупреждение архива:', err.message);
+        console.warn('Предупреждение архива:', err.message);
       } else {
         reject(err);
       }
@@ -211,9 +211,9 @@ async function createZipArchive(localFiles, archivePath) {
 async function cleanupTmp(dir) {
   try {
     await fs.promises.rm(dir, { recursive: true, force: true });
-    console.log(`🧹 Очищена временная папка: ${dir}`);
+    console.log(`Очищена временная папка: ${dir}`);
   } catch (err) {
-    console.error('❌ Ошибка очистки:', err.message);
+    console.error('Ошибка очистки:', err.message);
   }
 }
 
@@ -253,11 +253,11 @@ async function downloadAndArchiveFiles(station, year, dayStart, dayEnd, outputZi
     // 5. Очистка временных файлов
     await cleanupTmp(tmpDir);
     
-    console.log('🎉 Процесс завершен успешно!');
+    console.log('Процесс завершен успешно!');
     return zipPath;
     
   } catch (error) {
-    console.error('💥 Ошибка в основном процессе:', error.message);
+    console.error('Ошибка в основном процессе:', error.message);
     throw error;
   }
 }
@@ -271,4 +271,5 @@ export {
   downloadAndArchiveFiles
 
 };
+
 
