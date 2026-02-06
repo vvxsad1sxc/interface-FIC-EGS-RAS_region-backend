@@ -40,6 +40,39 @@
   text-align: center;
 }
 
+.reg__lockout-warning {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  text-align: center;
+  line-height: 1.5;
+
+  strong {
+    color: #664d03;
+    font-size: 1.1rem;
+  }
+}
+
+.reg__lockout-icon {
+  display: block;
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+}
+
+.reg__attempts-warning {
+  background-color: #e7f3ff;
+  border: 1px solid #b8daff;
+  color: #004085;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  text-align: center;
+  font-size: 14px;
+}
+
 .reg__password-requirements {
   margin: 12px 0;
   font-size: 13px;
