@@ -4,7 +4,15 @@ import './Registration.scss';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import {
+  checkRateLimitStatus,
+  recordFailedAttempt,
+  resetRateLimit,
+  getRemainingAttempts,
+  formatTimeRemaining,
+  MAX_ATTEMPTS_BEFORE_LOCK,
+} from '@/utils/rateLimiter';
 
 interface RegistrationProps {
   name: string;
@@ -13,6 +21,8 @@ interface RegistrationProps {
   password: string;
   confirmPassword: string;
 }
+
+const RATE_LIMIT_KEY = 'registration';
 
 /* -------------------------- Валидация силы пароля -------------------------- */
 const validatePasswordStrength = (password: string) => {
@@ -54,11 +64,46 @@ export default function Registration() {
   const [serverError, setServerError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Rate limiting states
+  const [lockoutTime, setLockoutTime] = useState(0);
+  const [remainingAttempts, setRemainingAttempts] = useState(MAX_ATTEMPTS_BEFORE_LOCK);
+
   const emailCheckTimeout = useRef<NodeJS.Timeout>();
   const usernameCheckTimeout = useRef<NodeJS.Timeout>();
 
   const password = watch('password');
   const confirmPassword = watch('confirmPassword');
+
+  // Проверка статуса блокировки при загрузке
+  const updateLockoutStatus = useCallback(() => {
+    const timeRemaining = checkRateLimitStatus(RATE_LIMIT_KEY);
+    setLockoutTime(timeRemaining);
+    setRemainingAttempts(getRemainingAttempts(RATE_LIMIT_KEY));
+  }, []);
+
+  useEffect(() => {
+    updateLockoutStatus();
+  }, [updateLockoutStatus]);
+
+  // Таймер обратного отсчета при блокировке
+  useEffect(() => {
+    if (lockoutTime <= 0) return;
+
+    const timer = setInterval(() => {
+      setLockoutTime((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          updateLockoutStatus();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [lockoutTime, updateLockoutStatus]);
+
+  const isLocked = lockoutTime > 0;
 
   /* ------------------- Валидация совпадения ------------------- */
   const validatePasswordMatch = (value: string) => {
@@ -113,6 +158,12 @@ export default function Registration() {
 
   /* ------------------------------- submit ------------------------------- */
   const onSubmit = async (data: RegistrationProps) => {
+    // Проверить блокировку перед отправкой
+    if (isLocked) {
+      setServerError(`Слишком много попыток. Подождите ${formatTimeRemaining(lockoutTime)}`);
+      return;
+    }
+
     setIsLoading(true);
     setServerError('');
 
@@ -122,10 +173,13 @@ export default function Registration() {
         email: data.email.trim(),
         organization: data.organization.trim(),
         password: data.password,
-        confirmPassword: data.confirmPassword, // Передаём
+        confirmPassword: data.confirmPassword,
       });
 
       if (result.success) {
+        // Успешная регистрация - сбросить счетчик
+        resetRateLimit(RATE_LIMIT_KEY);
+
         if (result.token && result.user) {
           // Автовход
           await loginAfterRegister?.(result.token, result.user);
@@ -137,10 +191,42 @@ export default function Registration() {
           navigate('/');
         }
       } else {
-        setServerError(result.message || 'Ошибка регистрации');
+        // Неудачная попытка - записать
+        const lockTime = recordFailedAttempt(RATE_LIMIT_KEY);
+        updateLockoutStatus();
+
+        if (lockTime > 0) {
+          setServerError(
+            `Превышен лимит попыток. Регистрация заблокирована на ${formatTimeRemaining(lockTime)}`
+          );
+        } else {
+          const attemptsLeft = getRemainingAttempts(RATE_LIMIT_KEY);
+          const msg = result.message || 'Ошибка регистрации';
+          setServerError(
+            attemptsLeft > 0
+              ? `${msg}. Осталось попыток: ${attemptsLeft}`
+              : msg
+          );
+        }
       }
     } catch (err: any) {
-      setServerError(err.message || 'Произошла ошибка при регистрации');
+      // Записать неудачную попытку
+      const lockTime = recordFailedAttempt(RATE_LIMIT_KEY);
+      updateLockoutStatus();
+
+      if (lockTime > 0) {
+        setServerError(
+          `Превышен лимит попыток. Регистрация заблокирована на ${formatTimeRemaining(lockTime)}`
+        );
+      } else {
+        const attemptsLeft = getRemainingAttempts(RATE_LIMIT_KEY);
+        const msg = err.message || 'Произошла ошибка при регистрации';
+        setServerError(
+          attemptsLeft > 0
+            ? `${msg}. Осталось попыток: ${attemptsLeft}`
+            : msg
+        );
+      }
     } finally {
       setIsLoading(false);
     }
@@ -151,7 +237,22 @@ export default function Registration() {
       <div className="reg__container">
         <h2 className="reg__title">Регистрация</h2>
 
-        {serverError && <div className="reg__server-error">{serverError}</div>}
+        {isLocked && (
+          <div className="reg__lockout-warning">
+            <span className="reg__lockout-icon">⏳</span>
+            Слишком много неудачных попыток регистрации.
+            <br />
+            Повторите через: <strong>{formatTimeRemaining(lockoutTime)}</strong>
+          </div>
+        )}
+
+        {serverError && !isLocked && <div className="reg__server-error">{serverError}</div>}
+
+        {!isLocked && remainingAttempts < MAX_ATTEMPTS_BEFORE_LOCK && remainingAttempts > 0 && (
+          <div className="reg__attempts-warning">
+            Осталось попыток: {remainingAttempts} из {MAX_ATTEMPTS_BEFORE_LOCK}
+          </div>
+        )}
 
         <form id="reg__form" className="reg__form" onSubmit={handleSubmit(onSubmit)}>
           {/* Имя */}
@@ -168,7 +269,7 @@ export default function Registration() {
             type="text"
             className="reg__form-input"
             placeholder="Имя пользователя"
-            disabled={isLoading}
+            disabled={isLoading || isLocked}
           />
           {errors.name && <p className="reg__form-error">{errors.name.message}</p>}
 
@@ -184,7 +285,7 @@ export default function Registration() {
             type="email"
             className="reg__form-input"
             placeholder="Почта"
-            disabled={isLoading}
+            disabled={isLoading || isLocked}
           />
           {errors.email && <p className="reg__form-error">{errors.email.message}</p>}
 
@@ -197,7 +298,7 @@ export default function Registration() {
             type="text"
             className="reg__form-input"
             placeholder="Организация"
-            disabled={isLoading}
+            disabled={isLoading || isLocked}
           />
           {errors.organization && <p className="reg__form-error">{errors.organization.message}</p>}
 
@@ -210,7 +311,7 @@ export default function Registration() {
             type="password"
             className="reg__form-input"
             placeholder="Пароль"
-            disabled={isLoading}
+            disabled={isLoading || isLocked}
           />
           {errors.password && <p className="reg__form-error">{errors.password.message}</p>}
 
@@ -236,7 +337,7 @@ export default function Registration() {
             type="password"
             className="reg__form-input"
             placeholder="Подтверждение пароля"
-            disabled={isLoading}
+            disabled={isLoading || isLocked}
           />
           {errors.confirmPassword && (
             <p className="reg__form-error">{errors.confirmPassword.message}</p>
@@ -260,8 +361,8 @@ export default function Registration() {
           form="reg__form"
           type="submit"
           aim="reg"
-          content={isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
-          disabled={isLoading}
+          content={isLoading ? 'Регистрация...' : isLocked ? 'Заблокировано' : 'Зарегистрироваться'}
+          disabled={isLoading || isLocked}
         />
 
         <div className="reg__links">
